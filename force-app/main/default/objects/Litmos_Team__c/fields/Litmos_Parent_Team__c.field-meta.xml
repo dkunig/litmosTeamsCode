@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Litmos_Parent_Team__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description>Holds parent team</description>
+    <externalId>false</externalId>
+    <label>Litmos Parent Team</label>
+    <referenceTo>Litmos_Team__c</referenceTo>
+    <relationshipLabel>Litmos Sub-Teams</relationshipLabel>
+    <relationshipName>Litmos_Teams</relationshipName>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

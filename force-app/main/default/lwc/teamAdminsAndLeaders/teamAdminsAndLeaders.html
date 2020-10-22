@@ -2,11 +2,29 @@
     <lightning-card>
         <h1 class="slds-text-title_caps slds-var-p-left_medium">Team Admins</h1>
         <lightning-layout>
-            <lightning-layout-item class="slds-var-p-left_xx-large slds-var-p-top_large">
+            <lightning-layout-item class="slds-var-p-left_xx-large slds-var-p-top_medium">
                 <template if:true={admins}>
-                    <ul>
+                    <ul class="slds-feed__list">
                         <template for:each={admins} for:item="admin">
-                            <li key={admin.Id}>{admin.Learner__r.Name}</li>
+                            <li class="slds-feed__item" key={admin.Id}>
+                                <article class="slds-post">
+                                    <header class="slds-post__header slds-media">
+                                        <div class="slds-media__figure">
+                                            <lightning-avatar src={admin.Learner__r.SmallPhotoUrl} variant="circle"></lightning-avatar>
+                                        </div>
+                                        <div class="slds-media__body">
+                                            <div class="slds-grid slds-grid_align-spread slds-has-flexi-trucate">
+                                                <p>
+                                                    <a href="javascript:void(0)" title={admin.Learner__r.Name} onclick={navigateToRecord} data-record-id={admin.Learner__c}>{admin.Learner__r.Name}</a>
+                                                </p>
+                                            </div>
+                                            <p class="slds-text-body_small">
+                                                {admin.Learner__r.Title}
+                                            </p>
+                                        </div>
+                                    </header>
+                                </article>
+                            </li>
                         </template>
                     </ul>
                 </template>
@@ -19,11 +37,29 @@
         </lightning-layout>
         <h1 class="slds-text-title_caps slds-var-p-left_medium slds-var-p-top_x-large">Team Leaders</h1>
         <lightning-layout>
-            <lightning-layout-item class="slds-var-p-left_xx-large slds-var-p-top_large">
+            <lightning-layout-item class="slds-var-p-left_xx-large slds-var-p-top_medium">
                 <template if:true={leaders}>
-                    <ul>
+                    <ul class="slds-feed__list">
                         <template for:each={leaders} for:item="leader">
-                            <li key={leader.Id}>{leader.Learner__r.Name}</li>
+                            <li class="slds-feed__item" key={leader.Id}>
+                                <article class="slds-post">
+                                    <header class="slds-post__header slds-media">
+                                        <div class="slds-media__figure">
+                                            <lightning-avatar src={leader.Learner__r.SmallPhotoUrl} variant="circle"></lightning-avatar>
+                                        </div>
+                                        <div class="slds-media__body">
+                                            <div class="slds-grid slds-grid_align-spread slds-has-flexi-trucate">
+                                                <p>
+                                                    <a href="javascript:void(0)" title={leader.Learner__r.Name} onclick={navigateToRecord} data-record-id={leader.Learner__c}>{leader.Learner__r.Name}</a>
+                                                </p>
+                                            </div>
+                                            <p class="slds-text-body_small">
+                                                {leader.Learner__r.Title}
+                                            </p>
+                                        </div>
+                                    </header>
+                                </article>
+                            </li>
                         </template>
                     </ul>
                 </template>

@@ -1,8 +1,9 @@
 import { LightningElement,api, track, wire } from 'lwc';
 import getAdmins from '@salesforce/apex/litmosTeamsController.getAdmins';
 import getLeaders from '@salesforce/apex/litmosTeamsController.getLeaders';
+import { NavigationMixin } from 'lightning/navigation';
 
-export default class TeamAdminsAndLeaders extends LightningElement {
+export default class TeamAdminsAndLeaders extends NavigationMixin(LightningElement) {
     @api recordId;
     @track admins = undefined;
     @track leaders = undefined;
@@ -40,4 +41,14 @@ export default class TeamAdminsAndLeaders extends LightningElement {
         })
     }
     
+    navigateToRecord(event) {
+        this[NavigationMixin.Navigate]({
+            type: 'standard__recordPage',
+            attributes: {
+                recordId : event.target.dataset.recordId,
+                objectApiName : 'User',
+                actionName: 'view'
+            }
+        });
+    }
 }
