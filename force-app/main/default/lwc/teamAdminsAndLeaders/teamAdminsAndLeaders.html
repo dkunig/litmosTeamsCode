@@ -1,0 +1,42 @@
+<template>
+    <lightning-card>
+        <lightning-card>
+            <h1 slot="title" class="slds-text_title-caps">Team Admins</h1>
+            <lightning-layout>
+                <lightning-layout-item class="slds-var-p-left_medium">
+                    <template if:true={admins}>
+                        <ul>
+                            <template for:each={admins} for:item="admin">
+                                <li key={admin.Id}>{admin.Learner__r.Name}</li>
+                            </template>
+                        </ul>
+                    </template>
+                    <template if:false={admins}>
+                        <div class="slds-align_absolute-center">
+                            No admins assigned to this team.
+                        </div>
+                    </template>
+                </lightning-layout-item>
+            </lightning-layout>
+        </lightning-card>
+        <lightning-card title="Team Leaders">
+            <template if:true={leaders}>
+                <lightning-layout>
+                    <lightning-layout-item class="slds-var-p-left_medium">
+                        <ul>
+                            <template for:each={leaders} for:item="leader">
+                                <li key={leader.Id}>{leader.Learner__r.Name}</li>
+                            </template>
+                        </ul>
+                    </lightning-layout-item>
+                </lightning-layout>
+                
+            </template>
+            <template if:false={leaders}>
+                <div class="slds-align_absolute-center">
+                    No leaders assigned to this team.
+                </div>
+            </template>
+        </lightning-card>
+    </lightning-card>
+</template>
