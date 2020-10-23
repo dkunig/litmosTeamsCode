@@ -60,8 +60,8 @@ public class litmosTeamsControllerTEST {
         Litmos_Team_Member__c member = new Litmos_Team_Member__c(
             Learner__c = leader.Id,
             Litmos_Team__c = team.Id,
-            Member_Type__c = 'Admin',
-            Litmos_User_Id__c = 'ADMINUSER1'
+            Member_Type__c = 'Leader',
+            Litmos_User_Id__c = 'LEADERUSER1'
         );
         insert member;
 
