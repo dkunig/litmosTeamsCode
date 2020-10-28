@@ -1,5 +1,6 @@
 public class litmosTeamsConnectCallout {
     public static HttpResponse getLitmosExternalService(String endpoint, String apikey) {
+        System.debug('inside callout');
         HttpRequest req = new HttpRequest();
         req.setEndpoint(endpoint);
         req.setMethod('GET');
