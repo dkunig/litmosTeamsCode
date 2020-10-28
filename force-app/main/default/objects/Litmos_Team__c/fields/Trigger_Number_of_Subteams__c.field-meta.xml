@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Trigger_Number_of_Subteams__c</fullName>
+    <defaultValue>0</defaultValue>
     <description>Holds the total number of subteams. Does not include subteams of children. Populated by trigger. Formula field will be used to display on record page.</description>
     <externalId>false</externalId>
     <label>Trigger Number of Subteams</label>

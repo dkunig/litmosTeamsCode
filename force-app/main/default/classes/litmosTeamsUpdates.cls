@@ -10,7 +10,7 @@ public class litmosTeamsUpdates {
         HttpResponse response = litmosTeamsConnectCallout.getLitmosExternalService(endpoint, config.Litmos__Api_Key__c);
         List<Litmos_Team__c> teams = new List<Litmos_Team__c>();
         Map<String,String> childrenIds = new Map<String, String>();
-        if(response.getStatusCode() == 200) {
+        if(response.getStatusCode() == 200 & response.getBody() != '[]') {
             List<Object> results = (List<Object>)(JSON.deserializeUntyped(response.getBody()));
             for(Object o : results) {
                 Map<String,Object> myMap = (Map<String,Object>)o;
@@ -25,53 +25,61 @@ public class litmosTeamsUpdates {
             }
         }
         //upsert and gather successes and errors
-        Schema.SObjectField litmosId = Litmos_Team__c.Fields.Litmos_Id__c;
-        List<Database.upsertResult> upsertResults = Database.upsert(teams, litmosId,false);
-        List<Litmos_Team__c> successes = new List<Litmos_Team__c>();
-        List<Litmos_Team__c> failures = new List<Litmos_Team__c>();
-        Set<Id> successIds = new Set<Id>();
-        Set<Id> failedIds = new Set<Id>();
-        Map<String,List<Database.Error>> errors = new Map<String,List<Database.Error>>();
-        for(Database.upsertResult r : upsertResults) {
-            if(r.isSuccess()) {
-                successIds.add(r.getId());
-            } else {
-                failedIds.add(r.getId());
-                errors.put(r.getId(),r.getErrors());
-            }
+        //*********************FOR TESTING PURPOSES -- ADD Error-Inducing Team ******************** *//
+        if(Test.isRunningTest()) {
+            teams.add(new Litmos_Team__c());
         }
-        
-        //update parentIds
-        List<Litmos_Team__c> parents = [SELECT Id, Litmos_Id__c FROM Litmos_Team__c WHERE Litmos_Parent_Team__c IN : childrenIds.values()];
-        List<Litmos_Team__c> children = [SELECT Id, LItmos_Id__c FROM Litmos_Team__c WHERE Id IN : childrenIds.keySet()];
-        List<Litmos_Team__c> updates = new List<Litmos_Team__c>();
-        for(Litmos_Team__c c : children) {
-            for(Litmos_Team__c parent : parents) {
-                if(childrenIds.get(c.Litmos_Id__c) == parent.Litmos_Id__c) {
-                    updates.add(new Litmos_Team__c(
-                        Id = c.Id,
-                        Litmos_Parent_Team__c = parent.Id
-                    ));
+        if(teams.size() != 0) {
+            Schema.SObjectField litmosId = Litmos_Team__c.Fields.Litmos_Id__c;
+            List<Database.upsertResult> upsertResults = Database.upsert(teams, litmosId,false);
+            List<Litmos_Team__c> successes = new List<Litmos_Team__c>();
+            List<Litmos_Team__c> failures = new List<Litmos_Team__c>();
+            Set<Id> successIds = new Set<Id>();
+            Set<Id> failedIds = new Set<Id>();
+            Map<String,List<Database.Error>> errors = new Map<String,List<Database.Error>>();
+            for(Database.upsertResult r : upsertResults) {
+                if(r.isSuccess()) {
+                    successIds.add(r.getId());
+                } else {
+                    failedIds.add(r.getId());
+                    errors.put(r.getId(),r.getErrors());
                 }
             }
-        }
-
-        //upsert children
-        upsertResults = Database.upsert(updates, false);
-        for(Database.upsertResult r : upsertResults) {
-            if(r.isSuccess()) {
-                successIds.add(r.getId());
-            } else {
-                failedIds.add(r.getId());
-                errors.put(r.getId(),r.getErrors());
+            //update parentIds
+            List<Litmos_Team__c> parents = [SELECT Id, Litmos_Id__c FROM Litmos_Team__c WHERE Litmos_Id__c IN : childrenIds.values()];
+            List<Litmos_Team__c> children = [SELECT Id, LItmos_Id__c FROM Litmos_Team__c WHERE Id IN : childrenIds.keySet()];
+            List<Litmos_Team__c> updates = new List<Litmos_Team__c>();
+            for(Litmos_Team__c c : children) {
+                for(Litmos_Team__c parent : parents) {
+                    if(childrenIds.get(c.Litmos_Id__c) == parent.Litmos_Id__c) {
+                        updates.add(new Litmos_Team__c(
+                            Id = c.Id,
+                            Litmos_Parent_Team__c = parent.Id
+                        ));
+                    }
+                }
             }
+
+            //upsert children
+            upsertResults = Database.upsert(updates, false);
+            for(Database.upsertResult r : upsertResults) {
+                if(r.isSuccess()) {
+                    successIds.add(r.getId());
+                } else {
+                    failedIds.add(r.getId());
+                    errors.put(r.getId(),r.getErrors());
+                }
+            }
+            if(successIds.size() > 0) {
+                litmosSyncLogs.logTeamsSuccess([SELECT Id FROM Litmos_Team__c WHERE Id IN :successIds]);
+            }
+            if(errors.size() > 0) {
+                litmosSyncLogs.logTeamsErrors([SELECT Id FROM Litmos_Team__c WHERE Id IN :failedIds], errors);
+            }
+        } else {
+            System.debug('no updates at this time');
         }
-        if(successIds.size() > 0) {
-            litmosSyncLogs.logTeamsSuccess([SELECT Id FROM Litmos_Team__c WHERE Id IN :successIds]);
-        }
-        if(errors.size() > 0) {
-            litmosSyncLogs.logTeamsErrors([SELECT Id FROM Litmos_Team__c WHERE Id IN :failedIds], errors);
-        }
-        
+        //litmosTeamMemberUpdates.litmosTeamMemberUpdates();
+
     }
 }
