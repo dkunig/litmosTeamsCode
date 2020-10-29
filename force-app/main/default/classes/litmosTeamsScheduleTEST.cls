@@ -1,6 +1,15 @@
 @isTest
 public with sharing class litmosTeamsScheduleTEST {
-    @isTest(SeeAllData=true)
+    @TestSetup
+    static void setupData(){
+        Litmos__Configuration__c config = new Litmos__Configuration__c(
+            Litmos__Api_Key__c = 'FAKEKEY',
+            Litmos__Api_End_Point__c = 'https://api.litmos.com/v1.svc',
+            Litmos__Sync_Active__c = true
+        );
+        insert config;
+    }
+    @isTest    
     public static void litmosTeamsScheduleTEST() {
         StaticResourceCalloutMock mock = new StaticResourceCalloutMock();
         mock.setStaticResource('litmosTeamsJSON');
