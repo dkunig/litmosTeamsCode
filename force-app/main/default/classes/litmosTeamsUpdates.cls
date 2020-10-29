@@ -24,11 +24,13 @@ public class litmosTeamsUpdates {
                 }
             }
         }
+        System.debug('childrenIds: ' + childrenIds);
         //upsert and gather successes and errors
         //*********************FOR TESTING PURPOSES -- ADD Error-Inducing Team ******************** *//
         if(Test.isRunningTest()) {
             teams.add(new Litmos_Team__c());
         }
+        System.debug('teams: ' + teams);
         if(teams.size() != 0) {
             Schema.SObjectField litmosId = Litmos_Team__c.Fields.Litmos_Id__c;
             List<Database.upsertResult> upsertResults = Database.upsert(teams, litmosId,false);
@@ -47,7 +49,10 @@ public class litmosTeamsUpdates {
             }
             //update parentIds
             List<Litmos_Team__c> parents = [SELECT Id, Litmos_Id__c FROM Litmos_Team__c WHERE Litmos_Id__c IN : childrenIds.values()];
-            List<Litmos_Team__c> children = [SELECT Id, LItmos_Id__c FROM Litmos_Team__c WHERE Id IN : childrenIds.keySet()];
+            System.debug('parents: ' + parents);
+            System.debug('children keyset: ' + childrenIds.keySet());
+            List<Litmos_Team__c> children = [SELECT Id, Litmos_Id__c FROM Litmos_Team__c WHERE Litmos_Id__c IN : childrenIds.keySet()];
+            SYstem.debug('children: ' + children);
             List<Litmos_Team__c> updates = new List<Litmos_Team__c>();
             for(Litmos_Team__c c : children) {
                 for(Litmos_Team__c parent : parents) {
