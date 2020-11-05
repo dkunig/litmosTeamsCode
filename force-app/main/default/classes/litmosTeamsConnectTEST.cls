@@ -1,124 +1,101 @@
 @isTest
 public class litmosTeamsConnectTEST {
-	@isTest(SeeAllData=true)
-    static void testGetAllTeams() {
-        //get endpoint and configs
-        Litmos__Configuration__c config = [SELECT Litmos__Api_Key__c, Litmos__Api_End_Point__c FROM Litmos__Configuration__c WHERE isDeleted = false AND Litmos__Sync_Active__c = true LIMIT 1];
-        //use static resource
+	@testSetup
+    static void testData() {
+        Litmos__Configuration__c config = new Litmos__Configuration__c(
+        	Litmos__Api_Key__c = '1234567',
+            Litmos__Api_End_Point__c = 'https://api.litmos.com/v1.svc/',
+            Litmos__Sync_Active__c = true
+        );
+        insert config;
+        //insert team with no description
+        List<Litmos_Team__c> teams = Test.loadData(Litmos_Team__c.sObjectType, 'litmosTeamSampleData');
+        
+        //insert users for testing new members
+        Profile standardUser = [SELECT Id FROM Profile WHERE Name = 'Standard User' LIMIT 1];
+        List<User> users = new List<User>();
+        User u1 = new User(
+            FirstName = 'Test Member Updates',
+            LastName = 'Test Last',
+            Litmos__OriginalId__c = 13488946,
+            Litmos__LitmosUserId__c = 'ABCDE',
+            Litmos__Litmos_Activated__c = true,
+            ProfileId = standardUser.Id,
+            isActive = true,
+            email='admin@adminuser.com',
+            Username='admin@adminuser.com',
+            alias='admin',
+            TimeZoneSidKey='America/New_York',
+            LocaleSidKey='en_US',
+            EmailEncodingKey='UTF-8',
+            LanguageLocaleKey='en_US'
+        );
+        User u2 = new User(
+        	FirstName = 'Test Member Updates',
+            LastName = 'On Team',
+            Litmos__OriginalId__c = 123456789,
+            Litmos__LitmosUserId__c = 'FGHIJ',
+            Litmos__Litmos_Activated__c = true,
+            ProfileId = standardUser.Id,
+            isActive=true,
+            email='onteam@onteam.com',
+            Username='onteam@onteam.com',
+            alias='ontea',
+            TimeZoneSidKey='America/New_York',
+            LocaleSidKey='en_US',
+            EmailEncodingKey='UTF-8',
+            LanguageLocaleKey='en_US'
+        );
+        users.add(u1);
+        users.add(u2);
+        insert users;
+    }
+    @isTest
+    public static void testGetAllTeams() {
+        System.debug('test get all teams');
         StaticResourceCalloutMock mock = new StaticResourceCalloutMock();
         mock.setStaticResource('litmosTeamsJSON');
         mock.setStatusCode(200);
-        mock.setHeader('Content-Type', 'application/json');
-        mock.setHeader('apikey', config.Litmos__Api_Key__c);
+        mock.setHeader('content-type','application/json');
         
         //set the mock callout mode
         Test.setMock(HttpCalloutMock.class, mock);
-        
-        //call the method taht performs the callout
-        //get endpoint
-        
-        HttpResponse res = litmosTeamsConnectCallout.getLitmosExternalService(config.Litmos__API_End_Point__c + 'teams?source=sourceapp&format=json',config.Litmos__Api_Key__c);
-        System.assertEquals(200, res.getStatusCode());
-        System.debug('response: ' + res.getBody());
-        System.assertEquals('[{"Id": "ZppqOWTqgVM1","Name": "Accounts","TeamCodeForBulkImport": "1689704-Accounts","ParentTeamId": ""},' +
-      						'{"Id": "Aweaaw20pEU1","Name": "Accounts","TeamCodeForBulkImport": "1724932-Accounts","ParentTeamId": ""},' +
-                            '{"Id": "GXDX8tFDORk1","Name": "Customers","TeamCodeForBulkImport": "1084247-Customers","ParentTeamId": ""},' +
-                            '{"Id": "2O3Bi2Ib4Sg1","Name": "Hoa\'s Team","TeamCodeForBulkImport": "1119145-HoasTeam","ParentTeamId": ""},' +
-                            '{"Id": "yYv0ln5yeAw1","Name": "Dawn\'s Sub Team Test","TeamCodeForBulkImport": "1725150-DawnsSubTeamTest","ParentTeamId": "2O3Bi2Ib4Sg1"},' +
-                            '{"Id": "lwxtC0S_JV81","Name": "Dawn\'s Sub-Sub Team","TeamCodeForBulkImport": "1725165-DawnsSub-SubTeam","ParentTeamId": "yYv0ln5yeAw1"}]', res.getBody());
         Test.startTest();
         LitmosTeamsConnect.getAllTeams();
-        Test.stopTest();        
+        Test.stopTest();
+        List<Litmos_Team__c> teamsInserted = [SELECT Id FROM Litmos_Team__c];
+        System.assertEquals(6,teamsInserted.size());
     }
-    @isTest(SeeAllData=true)
-    static void testDescriptionUpdates() {
-        //get endpoint and configs
-        Litmos__Configuration__c config = [SELECT Litmos__Api_Key__c, Litmos__Api_End_Point__c FROM Litmos__Configuration__c WHERE isDeleted = false AND Litmos__Sync_Active__c = true LIMIT 1];
-        //use static resource
+    @isTest
+    public static void testGetDescriptions() {
         StaticResourceCalloutMock mock = new StaticResourceCalloutMock();
         mock.setStaticResource('litmosTeamDataFull');
-        mock.setStatusCode(200);
-        mock.setHeader('Content-Type', 'application/json');
-        mock.setHeader('apikey', config.Litmos__Api_Key__c);
-        //set the mock callout mode
+        /*mock.setStatusCode(200);
+        mock.setHeader(key, val)*/
+        
         Test.setMock(HttpCalloutMock.class, mock);
-        
-        //call the method taht performs the callout
-        //get endpoint
-        
-        HttpResponse res = litmosTeamsConnectCallout.getLitmosExternalService(config.Litmos__API_End_Point__c + 'teams/ZppqOWTqgVM1?source=sourceapp&format=json',config.Litmos__Api_Key__c);
-        System.assertEquals(200, res.getStatusCode());
-        System.debug('response: ' + res.getBody());
-        System.assertEquals('{"Id": "ZppqOWTqgVM1","Name": "Accounts","Description": "Created a sample Team for Account","ParentTeamId": "","TeamCodeForBulkImport": "1689704-Accounts"}', res.getBody());
+        //make sure no description exists prior to launching test:
+        Litmos_Team__c noDesc = [SELECT Id,Description__c FROM Litmos_Team__c LIMIT 1];
+        System.assertEquals(null, noDesc.Description__c);
         Test.startTest();
         LitmosTeamsConnect.updateNullDescriptions();
         Test.stopTest();
+        //make sure description exists after launching test
+        Litmos_Team__c description = [SELECT Id,Description__c FROM Litmos_Team__c LIMIT 1];
+        System.assertEquals('Created a sample Team for Account',description.Description__c);
+        //assert that both records are the same to confirm that the description was added to the correct record
+        System.assert(noDesc.Id == description.Id);
     }
-    @isTest(SeeAllData=true)
-    static void testMemberInserts() {
-		Litmos__Configuration__c config = [SELECT Litmos__Api_Key__c, Litmos__Api_End_Point__c FROM Litmos__Configuration__c WHERE isDeleted = false AND Litmos__Sync_Active__c = true LIMIT 1];
+    @isTest
+    public static void testTeamMembers() {
         StaticResourceCalloutMock mock = new StaticResourceCalloutMock();
-        mock.setStaticResource('Litmos_Team_Members');
-        mock.setStatusCode(200);
-        mock.setHeader('Content-Type', 'application/json');
-        mock.setHeader('apikey', config.Litmos__Api_Key__c);
-        //set the mock callout mode
+        mock.setStaticResource('Litmos_Team_With_Team_Members');
+        
         Test.setMock(HttpCalloutMock.class, mock);
-        
-        //call the method taht performs the callout
-        //get endpoint
-        
-        HttpResponse res = litmosTeamsConnectCallout.getLitmosExternalService(config.Litmos__API_End_Point__c + 'teams/yYv0ln5yeAw1/users?source=sourceapp&format=json',config.Litmos__Api_Key__c);
-        System.assertEquals(200, res.getStatusCode());
-        System.debug('response: ' + res.getBody());
-        System.assertEquals('[{"Id": "PaD1GUsp8bHbPMpQLsL7PQ2","UserName": "arya.starkelearn@gmail.com","FirstName": "Arya","LastName": "Stark","Active": true,"Email": "arya.starkelearn@gmail.com","AccessLevel": null,"Brand": null},{"Id": "lGJTqiW7D3duNp8XlKLrtg2","UserName": "dawn.kunig@fluidigm.com.test","FirstName": "Dawn","LastName": "Kunig","Active": true,"Email": "dawn.kunig=fluidigm.com@example.com","AccessLevel": null,"Brand": null},{"Id": "YMflF6OT8dfR6yaCUqzrYQ2","UserName": "dmitry.bandura@fluidigm.com.test","FirstName": "Dmitry","LastName": "Bandura","Active": true,"Email": "dmitry.bandura=fluidigm.com@example.com","AccessLevel": null,"Brand": null}]', res.getBody());
         Test.startTest();
         LitmosTeamsConnect.insertTeamMembers();
         Test.stopTest();
-
-    }
-    @isTest(SeeAllData=true)
-    static void testTeamAdmins() {
-        Litmos__Configuration__c config = [SELECT Litmos__Api_Key__c, Litmos__Api_End_Point__c FROM Litmos__Configuration__c WHERE isDeleted = false AND Litmos__Sync_Active__c = true LIMIT 1];
-        StaticResourceCalloutMock mock = new StaticResourceCalloutMock();
-        mock.setStaticResource('Litmos_Team_Members');
-        mock.setStatusCode(200);
-        mock.setHeader('Content-Type', 'application/json');
-        mock.setHeader('apikey', config.Litmos__Api_Key__c);
-        //set the mock callout mode
-        Test.setMock(HttpCalloutMock.class, mock);
-        
-        //call the method taht performs the callout
-        //get endpoint
-        
-        HttpResponse res = litmosTeamsConnectCallout.getLitmosExternalService(config.Litmos__API_End_Point__c + 'teams/yYv0ln5yeAw1/admins?source=sourceapp&format=json',config.Litmos__Api_Key__c);
-        System.assertEquals(200, res.getStatusCode());
-        System.debug('response: ' + res.getBody());
-        System.assertEquals('[{"Id": "PaD1GUsp8bHbPMpQLsL7PQ2","UserName": "arya.starkelearn@gmail.com","FirstName": "Arya","LastName": "Stark","Active": true,"Email": "arya.starkelearn@gmail.com","AccessLevel": null,"Brand": null},{"Id": "lGJTqiW7D3duNp8XlKLrtg2","UserName": "dawn.kunig@fluidigm.com.test","FirstName": "Dawn","LastName": "Kunig","Active": true,"Email": "dawn.kunig=fluidigm.com@example.com","AccessLevel": null,"Brand": null},{"Id": "YMflF6OT8dfR6yaCUqzrYQ2","UserName": "dmitry.bandura@fluidigm.com.test","FirstName": "Dmitry","LastName": "Bandura","Active": true,"Email": "dmitry.bandura=fluidigm.com@example.com","AccessLevel": null,"Brand": null}]', res.getBody());
-        Test.startTest();
-        LitmosTeamsConnect.getTeamAdmins();
-        Test.stopTest();
-    }
-    @isTest(SeeAllData=true)
-    static void testTeamLeaders() {
-        Litmos__Configuration__c config = [SELECT Litmos__Api_Key__c, Litmos__Api_End_Point__c FROM Litmos__Configuration__c WHERE isDeleted = false AND Litmos__Sync_Active__c = true LIMIT 1];
-        StaticResourceCalloutMock mock = new StaticResourceCalloutMock();
-        mock.setStaticResource('Litmos_Team_Members');
-        mock.setStatusCode(200);
-        mock.setHeader('Content-Type', 'application/json');
-        mock.setHeader('apikey', config.Litmos__Api_Key__c);
-        //set the mock callout mode
-        Test.setMock(HttpCalloutMock.class, mock);
-        
-        //call the method taht performs the callout
-        //get endpoint
-        
-        HttpResponse res = litmosTeamsConnectCallout.getLitmosExternalService(config.Litmos__API_End_Point__c + 'teams/yYv0ln5yeAw1/leaders?source=sourceapp&format=json',config.Litmos__Api_Key__c);
-        System.assertEquals(200, res.getStatusCode());
-        System.debug('response: ' + res.getBody());
-        System.assertEquals('[{"Id": "PaD1GUsp8bHbPMpQLsL7PQ2","UserName": "arya.starkelearn@gmail.com","FirstName": "Arya","LastName": "Stark","Active": true,"Email": "arya.starkelearn@gmail.com","AccessLevel": null,"Brand": null},{"Id": "lGJTqiW7D3duNp8XlKLrtg2","UserName": "dawn.kunig@fluidigm.com.test","FirstName": "Dawn","LastName": "Kunig","Active": true,"Email": "dawn.kunig=fluidigm.com@example.com","AccessLevel": null,"Brand": null},{"Id": "YMflF6OT8dfR6yaCUqzrYQ2","UserName": "dmitry.bandura@fluidigm.com.test","FirstName": "Dmitry","LastName": "Bandura","Active": true,"Email": "dmitry.bandura=fluidigm.com@example.com","AccessLevel": null,"Brand": null}]', res.getBody());
-        Test.startTest();
-        LitmosTeamsConnect.getTeamLeaders();
-        Test.stopTest();
+        Integer numMems = [SELECT Count() FROM Litmos_Team_Member__c];
+        System.assertEquals(2, numMems);
     }
 }
