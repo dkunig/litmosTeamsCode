@@ -18,7 +18,6 @@ public class litmosTeamMemberScheduleTEST {
         Litmos__Configuration__c config = [SELECT Litmos__Api_Key__c FROM Litmos__Configuration__c LIMIT 1];
         //mock.setHeader('apikey', config.Litmos__API_Key__c);
         
-        
         Test.startTest();
         //set the mock callout mode
         Test.setMock(HttpCalloutMock.class, mock);        

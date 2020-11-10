@@ -3,7 +3,6 @@
     <types>
         <members>litmosTeamMemberUpdates</members>
         <members>LitmosTeamsConnect</members>
-        <members>litmosTeamsConnectCallout</members>
         <members>litmosTeamsConnectTEST</members>
         <members>litmosTeamsController</members>
         <members>litmosTeamsControllerTEST</members>
@@ -41,6 +40,8 @@
         <members>litmosTeamsJSON</members>
         <members>Litmos_Team_Members</members>
         <members>litmosTeamDataFull</members>
+        <members>Litmos_Team_With_Team_Members</members>
+        <members>litmosTeamSampleData</members>
         <name>StaticResource</name>
     </types>
     <version>50.0</version>

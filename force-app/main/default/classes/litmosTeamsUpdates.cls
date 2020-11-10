@@ -4,10 +4,9 @@ public class litmosTeamsUpdates {
     public static void logTeamUpdates() {
         //called from schedulable apex to update teams daily
         System.debug('Inside logTeamUpdates: ' + config);
-        
         String startDate = System.now().addDays(-3).format('yyyy-MM-dd');
         String endpoint = config.Litmos__API_End_Point__c + 'org/teams?source=sourceapp&since=' + startDate + '&to=' + System.now().format('yyyy-MM-dd') + '&format=json';
-        HttpResponse response = litmosTeamsConnectCallout.getLitmosExternalService(endpoint, config.Litmos__Api_Key__c);
+        HttpResponse response = litmosConnection.getLitmosExternalService(endpoint, config.Litmos__Api_Key__c);
         List<Litmos_Team__c> teams = new List<Litmos_Team__c>();
         Map<String,String> childrenIds = new Map<String, String>();
         if(response.getStatusCode() == 200 & response.getBody() != '[]') {
@@ -52,7 +51,7 @@ public class litmosTeamsUpdates {
             System.debug('parents: ' + parents);
             System.debug('children keyset: ' + childrenIds.keySet());
             List<Litmos_Team__c> children = [SELECT Id, Litmos_Id__c FROM Litmos_Team__c WHERE Litmos_Id__c IN : childrenIds.keySet()];
-            SYstem.debug('children: ' + children);
+            System.debug('children: ' + children);
             List<Litmos_Team__c> updates = new List<Litmos_Team__c>();
             for(Litmos_Team__c c : children) {
                 for(Litmos_Team__c parent : parents) {

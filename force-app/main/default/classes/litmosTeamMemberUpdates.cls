@@ -7,7 +7,7 @@ public without sharing class litmosTeamMemberUpdates {
         String startDate = System.now().addDays(-4).format('yyyy-MM-dd');
         String endDate = System.now().addDays(1).format('yyyy-MM-dd');
         String endpoint = config.Litmos__API_End_Point__c + 'org/teams/users?source=sourceapp&since=' + startDate + '&to=' + endDate + '&format=json';
-        HttpResponse response = litmosTeamsConnectCallout.getLitmosExternalService(endpoint, config.Litmos__Api_Key__c);
+        HttpResponse response = litmosConnection.getLitmosExternalService(endpoint, config.Litmos__Api_Key__c);
         System.debug('response status: ' + response.getStatus());
         if(response.getStatusCode() == 200 & response.getBody() != '[]') {
             System.debug('response: ' + response.getBody());
