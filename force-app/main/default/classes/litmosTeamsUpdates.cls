@@ -37,21 +37,18 @@ public class litmosTeamsUpdates {
             List<Litmos_Team__c> failures = new List<Litmos_Team__c>();
             Set<Id> successIds = new Set<Id>();
             Set<Id> failedIds = new Set<Id>();
-            Map<String,List<Database.Error>> errors = new Map<String,List<Database.Error>>();
+            Map<String,String> errors = new Map<String,String>();
             for(Database.upsertResult r : upsertResults) {
                 if(r.isSuccess()) {
                     successIds.add(r.getId());
                 } else {
                     failedIds.add(r.getId());
-                    errors.put(r.getId(),r.getErrors());
+                    errors.put(r.getId(),String.valueOf(r.getErrors()));
                 }
             }
             //update parentIds
             List<Litmos_Team__c> parents = [SELECT Id, Litmos_Id__c FROM Litmos_Team__c WHERE Litmos_Id__c IN : childrenIds.values()];
-            System.debug('parents: ' + parents);
-            System.debug('children keyset: ' + childrenIds.keySet());
             List<Litmos_Team__c> children = [SELECT Id, Litmos_Id__c FROM Litmos_Team__c WHERE Litmos_Id__c IN : childrenIds.keySet()];
-            System.debug('children: ' + children);
             List<Litmos_Team__c> updates = new List<Litmos_Team__c>();
             for(Litmos_Team__c c : children) {
                 for(Litmos_Team__c parent : parents) {
@@ -71,7 +68,7 @@ public class litmosTeamsUpdates {
                     successIds.add(r.getId());
                 } else {
                     failedIds.add(r.getId());
-                    errors.put(r.getId(),r.getErrors());
+                    errors.put(r.getId(),String.valueOf(r.getErrors()));
                 }
             }
             if(successIds.size() > 0) {

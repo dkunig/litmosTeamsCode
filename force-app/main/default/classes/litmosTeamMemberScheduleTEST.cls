@@ -5,7 +5,8 @@ public class litmosTeamMemberScheduleTEST {
         Litmos__Configuration__c config = new Litmos__Configuration__c(
         	Litmos__Api_Key__c = '1234567',
             Litmos__Api_End_Point__c = 'https://api.litmos.com/v1.svc/',
-            Litmos__Sync_Active__c = true
+            Litmos__Sync_Active__c = true,
+            Litmos__Sync_Frequency__c = 'Every 1 Hour'
         );
         insert config;        
     }
@@ -17,6 +18,7 @@ public class litmosTeamMemberScheduleTEST {
         mock.setHeader('Content-Type', 'application/json');
         Litmos__Configuration__c config = [SELECT Litmos__Api_Key__c FROM Litmos__Configuration__c LIMIT 1];
         //mock.setHeader('apikey', config.Litmos__API_Key__c);
+        
         
         Test.startTest();
         //set the mock callout mode

@@ -1,14 +1,15 @@
 @isTest
-public class litmosTeamMemberUpdatesTEST {
+public class litmosTeamMembersManualTEST {
 	@testSetup
-    public static void testSetup() {
-         Litmos__Configuration__c config = new Litmos__Configuration__c(
+    static void testData() {
+        Litmos__Configuration__c config = new Litmos__Configuration__c(
         	Litmos__Api_Key__c = '1234567',
             Litmos__Api_End_Point__c = 'https://api.litmos.com/v1.svc/',
             Litmos__Sync_Active__c = true,
             Litmos__Sync_Frequency__c = 'Every 1 Hour'
         );
         insert config;
+        //insert users
         Profile standardUser = [SELECT Id FROM Profile WHERE Name = 'Standard User' LIMIT 1];
         List<User> users = new List<User>();
         User u1 = new User(
@@ -55,25 +56,8 @@ public class litmosTeamMemberUpdatesTEST {
             Litmos_Team__c = t.Id
         );
         insert testMember;
-        System.debug('test member: ' + testMember);
     }
-    @isTest
-    public static void testTeamMemberUpdates() {
-    	System.debug('testing member method now');
-        StaticResource sr = [SELECT Id,Body FROM StaticResource WHERE Name = 'Litmos_Team_Member_Updates' LIMIT 1];
-        
-        String content = sr.Body.toString();
-        List<Object> results = (List<Object>)JSON.deserializeUntyped(content);
-        
-        Test.startTest();
-        litmosTeamMemberUpdates.processCalloutResponse(results);
-        Test.stopTest();
-        List<User> users = [SELECT Id FROM User WHERE FirstName = 'Test Member Updates'];
-        System.debug('users: ' + users);
-        List<Litmos_Team__c> t = [SELECT Id FROM Litmos_Team__c WHERE Name = 'Test Team'];
-        System.debug('team: ' + t);
-        List<Litmos_Team_Member__c> member = [SELECT Id,Member_Type__c,Learner__c,Learner__r.Name FROM Litmos_Team_Member__c WHERE Learner__c IN :users AND Litmos_Team__c IN :t];
-        System.assertEquals(2, member.size());
-        
+    static void testUpdateTeamMembers() {
+		
     }
 }

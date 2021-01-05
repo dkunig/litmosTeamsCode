@@ -12,6 +12,9 @@
                         <valueListItems>
                             <value>Edit</value>
                         </valueListItems>
+                        <valueListItems>
+                            <value>Litmos_Team__c.Update_Members</value>
+                        </valueListItems>
                     </valueList>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
@@ -24,7 +27,7 @@
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>enableActionsInNative</name>
-                    <value>false</value>
+                    <value>true</value>
                 </componentInstanceProperties>
                 <componentInstanceProperties>
                     <name>hideChatterActions</name>

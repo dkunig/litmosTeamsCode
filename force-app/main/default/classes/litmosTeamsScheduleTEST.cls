@@ -5,7 +5,8 @@ public with sharing class litmosTeamsScheduleTEST {
         Litmos__Configuration__c config = new Litmos__Configuration__c(
             Litmos__Api_Key__c = 'FAKEKEY',
             Litmos__Api_End_Point__c = 'https://api.litmos.com/v1.svc',
-            Litmos__Sync_Active__c = true
+            Litmos__Sync_Active__c = true,
+            Litmos__Sync_Frequency__c = 'Every 1 hour'
         );
         insert config;
     }

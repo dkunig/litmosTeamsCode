@@ -22,9 +22,9 @@ public class litmosTeamsConnectTEST {
             Litmos__Litmos_Activated__c = true,
             ProfileId = standardUser.Id,
             isActive = true,
-            email='admin@adminuser.com',
-            Username='admin@adminuser.com',
-            alias='admin',
+            email='team1@adminuser.com',
+            Username='team1@adminuser.com',
+            alias='team1',
             TimeZoneSidKey='America/New_York',
             LocaleSidKey='en_US',
             EmailEncodingKey='UTF-8',
@@ -46,32 +46,54 @@ public class litmosTeamsConnectTEST {
             EmailEncodingKey='UTF-8',
             LanguageLocaleKey='en_US'
         );
+        User u3 = new User(
+            FirstName = 'Test Admin and Leader',
+            LastName = 'Test Last',
+            Litmos__OriginalId__c = 13488946,
+            Litmos__LitmosUserId__c = 'KLMNO',
+            Litmos__Litmos_Activated__c = true,
+            ProfileId = standardUser.Id,
+            isActive = true,
+            email='admin@adminuser.com',
+            Username='admin@adminuser.com',
+            alias='admin',
+            TimeZoneSidKey='America/New_York',
+            LocaleSidKey='en_US',
+            EmailEncodingKey='UTF-8',
+            LanguageLocaleKey='en_US'
+        );
         users.add(u1);
         users.add(u2);
+        users.add(u3);
         insert users;
+        Litmos_Team__c team = new Litmos_Team__c(
+        	Name = 'Test Team',
+            Litmos_Id__c = 'TEAMTEST'
+        );
+        insert team;
+        Litmos_Team_Member__c member = new Litmos_Team_Member__c(
+        	Litmos_Team__c = team.Id,
+            Learner__c = u3.Id,
+            Litmos_User_Id__c = u3.Litmos__LitmosUserId__c
+        );
+        insert member;
     }
     @isTest
     public static void testGetAllTeams() {
-        System.debug('test get all teams');
         StaticResourceCalloutMock mock = new StaticResourceCalloutMock();
         mock.setStaticResource('litmosTeamsJSON');
-        mock.setStatusCode(200);
-        mock.setHeader('content-type','application/json');
-        
         //set the mock callout mode
         Test.setMock(HttpCalloutMock.class, mock);
         Test.startTest();
         LitmosTeamsConnect.getAllTeams();
-        Test.stopTest();
-        List<Litmos_Team__c> teamsInserted = [SELECT Id FROM Litmos_Team__c];
-        System.assertEquals(6,teamsInserted.size());
+        Test.stopTest();        
+        //NOTE: 6 teams are in the static resource, but an additional team is created during testing in the actual test class for testing failures in insertion
+        System.assertEquals(6,[SELECT count() FROM Litmos_Team__c WHERE Litmos_Id__c != 'TEAMTEST']);
     }
     @isTest
     public static void testGetDescriptions() {
         StaticResourceCalloutMock mock = new StaticResourceCalloutMock();
         mock.setStaticResource('litmosTeamDataFull');
-        /*mock.setStatusCode(200);
-        mock.setHeader(key, val)*/
         
         Test.setMock(HttpCalloutMock.class, mock);
         //make sure no description exists prior to launching test:
@@ -95,7 +117,26 @@ public class litmosTeamsConnectTEST {
         Test.startTest();
         LitmosTeamsConnect.insertTeamMembers();
         Test.stopTest();
-        Integer numMems = [SELECT Count() FROM Litmos_Team_Member__c];
-        System.assertEquals(2, numMems);
+        System.assertEquals(3, [SELECT Count() FROM Litmos_Team_Member__c]);
+    }
+    @isTest
+    public static void testTeamAdmins() {
+        StaticResourceCalloutMock mock = new StaticResourceCalloutMock();
+        mock.setStaticResource('Litmos_Team_Admins_Mock');
+        Test.setMock(HttpCalloutMock.class, mock);
+        Test.startTest();
+        LitmosTeamsConnect.getTeamAdmins();
+        Test.stopTest();
+        System.assertEquals(1, [SELECT Count() FROM Litmos_Team_Member__c WHERE Member_Type__c = 'Admin']);
+    }
+    @isTest
+    public static void testTeamLeaders() {
+        StaticResourceCalloutMock mock = new StaticResourceCalloutMock();
+        mock.setStaticResource('Litmos_Team_Admins_Mock');
+        Test.setMock(HttpCalloutMock.class, mock);
+        Test.startTest();
+        LitmosTeamsConnect.getTeamLeaders();
+        Test.stopTest();
+        System.assertEquals(1, [SELECT Count() FROM Litmos_Team_Member__c WHERE Member_Type__c = 'Leader']);
     }
 }

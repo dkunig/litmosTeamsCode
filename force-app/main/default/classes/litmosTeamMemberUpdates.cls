@@ -1,13 +1,14 @@
 public without sharing class litmosTeamMemberUpdates {
     
+    //NEEDS REFACTORING FROM SCRATCH
+    
     private static final Litmos__Configuration__c config = [SELECT Litmos__Api_Key__c, Litmos__Api_End_Point__c FROM Litmos__Configuration__c WHERE isDeleted = false AND Litmos__Sync_Active__c = true LIMIT 1];
     @future(callout=true)
     public static void litmosTeamMemberUpdates() {
         System.debug('inside team member updates');
         String startDate = System.now().addDays(-4).format('yyyy-MM-dd');
         String endDate = System.now().addDays(1).format('yyyy-MM-dd');
-        String endpoint = config.Litmos__API_End_Point__c + 'org/teams/users?source=sourceapp&since=' + startDate + '&to=' + endDate + '&format=json';
-        HttpResponse response = litmosConnection.getLitmosExternalService(endpoint, config.Litmos__Api_Key__c);
+        HttpResponse response = litmosConnection.getLitmosExternalService(config.Litmos__API_End_Point__c + 'org/teams/users?source=sourceapp&since=' + startDate + '&to=' + endDate + '&format=json', config.Litmos__Api_Key__c);
         System.debug('response status: ' + response.getStatus());
         if(response.getStatusCode() == 200 & response.getBody() != '[]') {
             System.debug('response: ' + response.getBody());
@@ -18,28 +19,33 @@ public without sharing class litmosTeamMemberUpdates {
     public static void processCalloutResponse(List<Object> results) {
         //System.debug('inside processCalloutResponse');
         Map<Decimal,Object> myMap = new Map<Decimal,Object>();
-        Set<String> teamIds = new Set<String>();
+        Set<String> litmosTeamIds = new Set<String>();
         for(Object o : results) {
             Map<String,Object> itsAMap = (Map<String,Object>)o;
             myMap.put((Decimal)itsAMap.get('OriginalUserId'), o);
-            teamIds.add(String.valueOf(itsAMap.get('TeamId')));
+            litmosTeamIds.add(String.valueOf(itsAMap.get('TeamId')));
         }
         
-        System.debug('teamIds: ' + teamIds);
+        System.debug('teamIds: ' + litmosTeamIds);
         System.debug('map: ' + myMap.isEmpty());
         System.debug('map details: ' + myMap);
         if(!myMap.isEmpty()) {
             List<Litmos_Team_Member__c> members = new List<Litmos_Team_Member__c>();
-            List<User> users = [SELECT Id,Litmos__OriginalId__c,Litmos__User_Id__c FROM User WHERE Litmos__OriginalId__c IN :myMap.keySet()];
+            List<User> users = [SELECT Id,Litmos__OriginalId__c,Litmos__LitmosUserId__c FROM User WHERE Litmos__OriginalId__c IN :myMap.keySet()];
             System.debug('users: ' + users);
             Map<String,User> userMap = new Map<String,User>();
             for(User u : users) {
                 userMap.put(String.valueOf(u.Litmos__OriginalId__c), u);
             }
             System.debug('userMap: ' + userMap);
-            List<Litmos_Team__c> teams = [SELECT Id,Name,Litmos_Id__c FROM Litmos_Team__c WHERE Litmos_Id__c IN :teamIds];
+            List<Litmos_Team__c> teams = [SELECT Id,Name,Litmos_Id__c FROM Litmos_Team__c WHERE Litmos_Id__c IN :litmosTeamIds];
+            Set<Id> teamIds = new Set<Id>();
+            for(Litmos_Team__c t : teams) {
+                teamIds.add(t.Id);
+            }
             System.debug('teams: ' + teams);
             Set<Id> userIds = new Set<Id>();
+            Map<String,String> errors = new Map<String,String>();
             for(Object o : myMap.values()) {
                 Map<String,Object> obj = (Map<String,Object>)o;
                 SYstem.debug('object: ' + obj);
@@ -48,13 +54,14 @@ public without sharing class litmosTeamMemberUpdates {
                     System.debug('user: ' + u);
                     if(u == null) {
                         //log errors -- need litmos original id
-                        litmosSyncLogs.logTeamMemberErrors('No user with matching litmos original id: ' + obj.get('OriginalUserId'), t.Id);
+                        //litmosSyncLogs.logTeamMemberErrors('No user with matching litmos original id: ' + obj.get('OriginalUserId'), t.Id);
+                        errors.put(t.Id, 'No user with matching litmos original id: ' + obj.get('OriginalUserId'));
                     } else {
                         if(t.Litmos_Id__c == obj.get('TeamId')) {
                             members.add(new Litmos_Team_Member__c(
                                 Litmos_Team__c = t.Id,
                                 Learner__c = u.Id,
-                                Litmos_User_Id__c = u.Litmos__User_Id__c,
+                                Litmos_User_Id__c = u.Litmos__LitmosUserId__c,
                                 Member_Type__c = obj.get('IsTeamLeader') == true ? 'Leader' : obj.get('IsTeamAdmin') == true ? 'Admin' : 'Learner'
                             ));
                             userIds.add(u.Id);
@@ -74,24 +81,25 @@ public without sharing class litmosTeamMemberUpdates {
                 }
             }
             //upsert result
-            Map<String,List<Database.Error>> errors = new Map<String,List<Database.Error>>();
+            //Map<String,String> errors = new Map<String,String>();
             Set<Id> successIds = new Set<Id>();
-            Set<Id> failedIds = new Set<Id>();
+            //Set<Id> failedIds = new Set<Id>();
             List<Database.UpsertResult> upsertResults = Database.upsert(members);
             for(Database.UpsertResult r : upsertResults) {
                 if(r.isSuccess()) {
                     successIds.add(r.getId());
                 } else {
-                    failedIds.add(r.getId());
-                    errors.put(r.getId(),r.getErrors());
+                    //failedIds.add(r.getId());
+                    //errors.put(r.getId(),String.valueOf(r.getErrors()));
+                    
                 }
             }
             if(successIds.size() > 0) {
                 litmosSyncLogs.logTeamMemberSuccess([SELECT Id FROM Litmos_Team_Member__c WHERE Id IN :successIds]);
             }
-            if(failedIds.size() > 0) {
-                litmosSyncLogs.logTeamMemberErrors([SELECT Id FROM Litmos_Team_Member__c WHERE Id IN :failedIds], errors);
-            }
+            /*if(failedIds.size() > 0) {
+                //litmosSyncLogs.logTeamMemberErrors([SELECT Id FROM Litmos_Team_Member__c WHERE Id IN :failedIds], errors);
+            }*/
         
         }
     }

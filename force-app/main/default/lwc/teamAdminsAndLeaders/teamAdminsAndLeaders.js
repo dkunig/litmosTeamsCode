@@ -1,4 +1,5 @@
 import { LightningElement,api, track, wire } from 'lwc';
+import {getRecordNotifyChange} from 'lightning/uiRecordApi';
 import getAdmins from '@salesforce/apex/litmosTeamsController.getAdmins';
 import getLeaders from '@salesforce/apex/litmosTeamsController.getLeaders';
 import { NavigationMixin } from 'lightning/navigation';
@@ -50,5 +51,9 @@ export default class TeamAdminsAndLeaders extends NavigationMixin(LightningEleme
                 actionName: 'view'
             }
         });
+    }
+
+    async handler() {
+        getRecordNotifyChange([{recordId: this.recordId}]);
     }
 }

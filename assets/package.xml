@@ -14,20 +14,25 @@
         <members>litmosTeamMembersSchedule</members>
         <members>litmosTeamMemberScheduleTEST</members>
         <members>litmosTeamMemberUpdatesTEST</members>
+        <members>litmosConnection</members>
+        <!--<members>litmosTeamMembersManual</members>
+        <members>litmosTeamMembersManualTEST</members>
+        <members>litmosTeamLeadAdmin</members>
+        <members>litmosTeamLeadAdminTEST</members>-->
         <name>ApexClass</name>
     </types>
-    <types>
+    <!--<types>
         <members>Litmos_Team_Record_Page</members>
         <name>FlexiPage</name>
-    </types>
+    </types>-->
     <types>
         <members>teamAdminsAndLeaders</members>
         <name>LightningComponentBundle</name>
     </types>
-    <types>
+    <!--<types>
         <members>Litmos_Team__c.Litmos_Team_Compact_Layout</members>
         <name>CompactLayout</name>
-    </types>
+    </types>-->
     <types>
         <members>Litmos_Team__c</members>
         <name>CustomObject</name>
@@ -42,7 +47,21 @@
         <members>litmosTeamDataFull</members>
         <members>Litmos_Team_With_Team_Members</members>
         <members>litmosTeamSampleData</members>
+        <members>Litmos_Team_Admins_Mock</members>
+        <members>Litmos_Team_Member_Updates</members>
+        <members>litmosAdminMock2Users</members>
+        <members>litmosLeaderMock2Users</members>
+        <members>litmosAdminMockNOUsers</members>
+        <members>litmosLeaderMockNOUsers</members>
         <name>StaticResource</name>
     </types>
+    <!--<types>
+        <members>Litmos_Team__c.Update_Members</members>
+        <name>QuickAction</name>
+    </types>*/
+    <types>
+        <members>litmosTeamMembers</members>
+        <name>AuraDefinitionBundle</name>
+    </types>-->
     <version>50.0</version>
 </Package>
