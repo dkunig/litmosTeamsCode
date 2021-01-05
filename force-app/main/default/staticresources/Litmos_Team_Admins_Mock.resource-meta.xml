@@ -2,5 +2,5 @@
 <StaticResource xmlns="http://soap.sforce.com/2006/04/metadata">
     <cacheControl>Public</cacheControl>
     <contentType>text/plain</contentType>
-    <description>Mock resource for testing litmos team members update schedule</description>
+    <description>Mock resource for testing litmos admins and leaders</description>
 </StaticResource>
